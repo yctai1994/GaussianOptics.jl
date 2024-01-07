@@ -5,6 +5,7 @@ export
     GaussianBeamParams,
     GaussianBeamAngle, 
     GaussianBeamWaist, 
+    GaussianBeamState,
     # Functions
     beamWaist,
     divergentAngle,
@@ -12,17 +13,23 @@ export
     # Constants
     GBParams,
     GBAngle,
-    GBWaist
+    GBWaist,
+    GBState
 
 abstract type GaussianBeamParams end
 
 const GBParams = GaussianBeamParams
 
-struct GaussianBeamAngle <: GaussianBeamParams angle::Float64 end
-struct GaussianBeamWaist <: GaussianBeamParams waist::Float64 end
+struct GaussianBeamAngle <: GaussianBeamParams angle::Float64               end
+struct GaussianBeamWaist <: GaussianBeamParams waist::Float64               end
+struct GaussianBeamState <: GaussianBeamParams q::ComplexF64; q̄::ComplexF64 end # q̄ ≜ q⁻¹
+
+GaussianBeamState(q::ComplexF64)                               = GaussianBeamState(q, inv(q))
+GaussianBeamState(λ::Real, p::GaussianBeamParams; z::Real=0.0) = GaussianBeamState(complex(z, -rayleighLength(λ, p)))
 
 const GBAngle = GaussianBeamAngle
 const GBWaist = GaussianBeamWaist
+const GBState = GaussianBeamState
 
 #=
                      ┌─────────────────┐
@@ -40,6 +47,7 @@ const GBWaist = GaussianBeamWaist
 
 beamWaist(w::GaussianBeamWaist)               = w.waist
 beamWaist(λ::Real, Θ::GaussianBeamAngle)      = 0.6366197723675814 * λ / Θ.angle
+beamWaist(λ::Real, p::GaussianBeamState)      = sqrt(λ / (π * imag(p.q̄)))
 
 divergentAngle(Θ::GaussianBeamAngle)          = Θ.angle
 divergentAngle(λ::Real, w::GaussianBeamWaist) = 0.6366197723675814 * λ / w.waist
