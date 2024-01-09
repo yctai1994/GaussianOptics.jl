@@ -1,4 +1,4 @@
 name = "GaussianOptics"
 uuid = "99163c79-21a9-4f0d-95d5-ffff293b3c67"
 authors = ["yctai1994 <yctai.git@gmail.com>"]
-version = "0.1.1"
+version = "0.1.2"

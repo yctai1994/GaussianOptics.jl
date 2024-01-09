@@ -27,7 +27,18 @@ struct GaussianBeamAngle <: GaussianBeamParams angle::Float64    end
 struct GaussianBeamWaist <: GaussianBeamParams waist::Float64    end
 struct GaussianBeamState <: GaussianBeamParams state::ComplexF64 end
 
+"""
+    GaussianBeamState(λ::Real, p::GaussianBeamParams; z::Real=0.0)
+
+Return an instance of complex beam parameter based on the given arguments.
+- `λ`: Gaussian beam wavelength. The caller takes responsibility for its physical unit.
+- `p`: `GaussianBeamParams` instance.
+  - `p <: {GaussianBeamAngle, GaussianBeamWaist}`: Return a new instance.
+  - `p :: GaussianBeamState`: Do nothing and return `p`.
+- `z`: The distance from the position of the smallest waist.
+"""
 GaussianBeamState(λ::Real, p::GaussianBeamParams; z::Real=0.0) = GaussianBeamState(complex(z, -rayleighLength(λ, p)))
+GaussianBeamState(λ::Real, p::GaussianBeamState;  z::Real=0.0) = p
 
 const GBAngle = GaussianBeamAngle
 const GBWaist = GaussianBeamWaist
@@ -47,13 +58,26 @@ const GBState = GaussianBeamState
   └────────────────┘     w₀ = 2λ/πΘ      └─────────────────┘
 =#
 
+"""
+    beamWaist(w::GaussianBeamWaist)
+    beamWaist(λ::Real, Θ::GaussianBeamAngle)
+    beamWaist(λ::Real, p::GaussianBeamState)
+"""
 beamWaist(w::GaussianBeamWaist)               = w.waist
 beamWaist(λ::Real, Θ::GaussianBeamAngle)      = 0.6366197723675814 * λ / Θ.angle
 beamWaist(λ::Real, p::GaussianBeamState)      = sqrt(λ / (π * imag(inv(p.state))))
 
+"""
+    divergentAngle(Θ::GaussianBeamAngle)
+    divergentAngle(λ::Real, w::GaussianBeamWaist)
+"""
 divergentAngle(Θ::GaussianBeamAngle)          = Θ.angle
 divergentAngle(λ::Real, w::GaussianBeamWaist) = 0.6366197723675814 * λ / w.waist
 
+"""
+    rayleighLength(λ::Real, Θ::GaussianBeamAngle)
+    rayleighLength(λ::Real, w::GaussianBeamWaist)
+"""
 rayleighLength(λ::Real, Θ::GaussianBeamAngle) = 1.2732395447351628 * λ / abs2(Θ.angle)
 rayleighLength(λ::Real, w::GaussianBeamWaist) = π * abs2(w.waist) / λ
 
